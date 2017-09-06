@@ -39,7 +39,6 @@ function createGeoScale(geoLayout, graphSize) {
         graphSize.l + geoWidth / 2, graphSize.t + geoHeight / 2
     ];
 
-
     // center of the projection is given by
     // the lon/lat ranges and the rotate angle
     var dlon = lon1 - lon0,
@@ -49,7 +48,6 @@ function createGeoScale(geoLayout, graphSize) {
 
     projLayout._center = [c0[0] + r[0], c0[1] + r[1]];
 
-    // needs a initial projection; it is called from makeProjection
     var setScale = function(projection) {
         var scale0 = projection.scale(),
             translate0 = projLayout._translate0,

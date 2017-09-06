@@ -19,18 +19,10 @@ var getTopojsonFeatures = require('../../lib/topojson_utils').getTopojsonFeature
 var locationToFeature = require('../../lib/geo_location_utils').locationToFeature;
 var arrayToCalcItem = require('../../lib/array_to_calc_item');
 
-var constants = require('../../plots/geo/constants');
-
-module.exports = function plot(geo, calcData, geoLayout) {
+module.exports = function plot(geo, calcData) {
+    var gChoropleth = geo.layers.backplot.select('.choroplethlayer');
 
     function keyFunc(d) { return d[0].trace.uid; }
-
-    var framework = geo.framework,
-        gChoropleth = framework.select('g.choroplethlayer'),
-        gBaseLayer = framework.select('g.baselayer'),
-        gBaseLayerOverChoropleth = framework.select('g.baselayeroverchoropleth'),
-        baseLayersOverChoropleth = constants.baseLayersOverChoropleth,
-        layerName;
 
     var gChoroplethTraces = gChoropleth
         .selectAll('g.trace.choropleth')
@@ -60,16 +52,6 @@ module.exports = function plot(geo, calcData, geoLayout) {
 
         paths.exit().remove();
     });
-
-    // some baselayers are drawn over choropleth
-    gBaseLayerOverChoropleth.selectAll('*').remove();
-
-    for(var i = 0; i < baseLayersOverChoropleth.length; i++) {
-        layerName = baseLayersOverChoropleth[i];
-        gBaseLayer.select('g.' + layerName).remove();
-        geo.drawTopo(gBaseLayerOverChoropleth, layerName, geoLayout);
-        geo.styleLayer(gBaseLayerOverChoropleth, layerName, geoLayout);
-    }
 
     style(geo);
 };

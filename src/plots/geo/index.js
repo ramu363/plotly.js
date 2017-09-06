@@ -9,13 +9,11 @@
 
 'use strict';
 
-var Geo = require('./geo');
-
+var createGeo = require('./geo2');
 var Plots = require('../../plots/plots');
 var counterRegex = require('../../lib').counterRegex;
 
 var GEO = 'geo';
-
 
 exports.name = GEO;
 
@@ -50,7 +48,7 @@ exports.plot = function plotGeo(gd) {
             geo = fullLayout[geoId]._subplot;
 
         if(!geo) {
-            geo = new Geo({
+            geo = createGeo({
                 id: geoId,
                 graphDiv: gd,
                 container: fullLayout._geolayer.node(),

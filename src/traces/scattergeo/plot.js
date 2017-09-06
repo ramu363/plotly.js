@@ -23,7 +23,6 @@ var subTypes = require('../scatter/subtypes');
 
 
 module.exports = function plot(geo, calcData) {
-
     function keyFunc(d) { return d[0].trace.uid; }
 
     function removeBADNUM(d, node) {
@@ -36,7 +35,7 @@ module.exports = function plot(geo, calcData) {
         fillLocationLonLat(calcData[i], geo.topojson);
     }
 
-    var gScatterGeoTraces = geo.framework.select('.scattergeolayer')
+    var gScatterGeoTraces = geo.layers.frontplot.select('.scatterlayer')
         .selectAll('g.trace.scattergeo')
         .data(calcData, keyFunc);
 
