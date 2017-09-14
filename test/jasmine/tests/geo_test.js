@@ -3,8 +3,7 @@ var Lib = require('@src/lib');
 
 var Geo = require('@src/plots/geo');
 var GeoAssets = require('@src/assets/geo_assets');
-var params = require('@src/plots/geo/constants');
-var supplyLayoutDefaults = require('@src/plots/geo/layout/axis_defaults');
+var constants = require('@src/plots/geo/constants');
 var geoLocationUtils = require('@src/lib/geo_location_utils');
 var topojsonUtils = require('@src/lib/topojson_utils');
 
@@ -29,326 +28,310 @@ function move(fromX, fromY, toX, toY, delay) {
     });
 }
 
-
-describe('Test geoaxes', function() {
-    'use strict';
-
-    describe('supplyLayoutDefaults', function() {
-        var geoLayoutIn,
-            geoLayoutOut;
-
-        beforeEach(function() {
-            geoLayoutOut = {};
-        });
-
-        it('should default to lon(lat)range to params non-world scopes', function() {
-            var scopeDefaults = params.scopeDefaults,
-                scopes = Object.keys(scopeDefaults),
-                customLonaxisRange = [-42.21313312, 40.321321],
-                customLataxisRange = [-42.21313312, 40.321321];
-
-            var dfltLonaxisRange, dfltLataxisRange;
-
-            scopes.forEach(function(scope) {
-                if(scope === 'world') return;
-
-                dfltLonaxisRange = scopeDefaults[scope].lonaxisRange;
-                dfltLataxisRange = scopeDefaults[scope].lataxisRange;
-
-                geoLayoutIn = {};
-                geoLayoutOut = {scope: scope};
-
-                supplyLayoutDefaults(geoLayoutIn, geoLayoutOut);
-                expect(geoLayoutOut.lonaxis.range).toEqual(dfltLonaxisRange);
-                expect(geoLayoutOut.lataxis.range).toEqual(dfltLataxisRange);
-                expect(geoLayoutOut.lonaxis.tick0).toEqual(dfltLonaxisRange[0]);
-                expect(geoLayoutOut.lataxis.tick0).toEqual(dfltLataxisRange[0]);
-
-                geoLayoutIn = {
-                    lonaxis: {range: customLonaxisRange},
-                    lataxis: {range: customLataxisRange}
-                };
-                geoLayoutOut = {scope: scope};
-
-                supplyLayoutDefaults(geoLayoutIn, geoLayoutOut);
-                expect(geoLayoutOut.lonaxis.range).toEqual(customLonaxisRange);
-                expect(geoLayoutOut.lataxis.range).toEqual(customLataxisRange);
-                expect(geoLayoutOut.lonaxis.tick0).toEqual(customLonaxisRange[0]);
-                expect(geoLayoutOut.lataxis.tick0).toEqual(customLataxisRange[0]);
-            });
-        });
-
-        it('should adjust default lon(lat)range to projection.rotation in world scopes', function() {
-            var expectedLonaxisRange, expectedLataxisRange;
-
-            function testOne() {
-                supplyLayoutDefaults(geoLayoutIn, geoLayoutOut);
-                expect(geoLayoutOut.lonaxis.range).toEqual(expectedLonaxisRange);
-                expect(geoLayoutOut.lataxis.range).toEqual(expectedLataxisRange);
-            }
-
-            geoLayoutIn = {};
-            geoLayoutOut = {
-                scope: 'world',
-                projection: {
-                    type: 'equirectangular',
-                    rotation: {
-                        lon: -75,
-                        lat: 45
-                    }
-                }
-            };
-            expectedLonaxisRange = [-255, 105];  // => -75 +/- 180
-            expectedLataxisRange = [-45, 135];   // => 45 +/- 90
-            testOne();
-
-            geoLayoutIn = {};
-            geoLayoutOut = {
-                scope: 'world',
-                projection: {
-                    type: 'orthographic',
-                    rotation: {
-                        lon: -75,
-                        lat: 45
-                    }
-                }
-            };
-            expectedLonaxisRange = [-165, 15];  // => -75 +/- 90
-            expectedLataxisRange = [-45, 135];  // => 45 +/- 90
-            testOne();
-
-            geoLayoutIn = {
-                lonaxis: {range: [-42.21313312, 40.321321]},
-                lataxis: {range: [-42.21313312, 40.321321]}
-            };
-            expectedLonaxisRange = [-42.21313312, 40.321321];
-            expectedLataxisRange = [-42.21313312, 40.321321];
-            testOne();
-        });
-    });
-});
-
-describe('Test Geo layout defaults', function() {
+fdescribe('Test Geo layout defaults', function() {
     'use strict';
 
     var layoutAttributes = Geo.layoutAttributes;
     var supplyLayoutDefaults = Geo.supplyLayoutDefaults;
 
-    describe('supplyLayoutDefaults', function() {
-        var layoutIn, layoutOut, fullData;
+    var layoutIn, layoutOut, fullData;
 
-        beforeEach(function() {
-            layoutOut = {};
+    beforeEach(function() {
+        layoutOut = {};
 
-            // needs a geo-ref in a trace in order to be detected
-            fullData = [{ type: 'scattergeo', geo: 'geo' }];
+        // needs a geo-ref in a trace in order to be detected
+        fullData = [{ type: 'scattergeo', geo: 'geo' }];
+    });
+
+    var seaFields = [
+        'showcoastlines', 'coastlinecolor', 'coastlinewidth',
+        'showocean', 'oceancolor'
+    ];
+
+    var subunitFields = [
+        'showsubunits', 'subunitcolor', 'subunitwidth'
+    ];
+
+    var frameFields = [
+        'showframe', 'framecolor', 'framewidth'
+    ];
+
+    it('should not coerce projection.rotation if type is albers usa', function() {
+        layoutIn = {
+            geo: {
+                projection: {
+                    type: 'albers usa',
+                    rotation: {
+                        lon: 10,
+                        lat: 10
+                    }
+                }
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        expect(layoutOut.geo.projection.rotation).toBeUndefined();
+    });
+
+    it('should not coerce projection.rotation if type is albers usa (converse)', function() {
+        layoutIn = {
+            geo: {
+                projection: {
+                    rotation: {
+                        lon: 10,
+                        lat: 10
+                    }
+                }
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        expect(layoutOut.geo.projection.rotation).toBeDefined();
+    });
+
+    it('should not coerce coastlines and ocean if type is albers usa', function() {
+        layoutIn = {
+            geo: {
+                projection: {
+                    type: 'albers usa'
+                },
+                showcoastlines: true,
+                showocean: true
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        seaFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeUndefined();
         });
+    });
 
-        var seaFields = [
-            'showcoastlines', 'coastlinecolor', 'coastlinewidth',
-            'showocean', 'oceancolor'
-        ];
+    it('should not coerce coastlines and ocean if type is albers usa (converse)', function() {
+        layoutIn = {
+            geo: {
+                showcoastlines: true,
+                showocean: true
+            }
+        };
 
-        var subunitFields = [
-            'showsubunits', 'subunitcolor', 'subunitwidth'
-        ];
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        seaFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeDefined();
+        });
+    });
 
-        var frameFields = [
-            'showframe', 'framecolor', 'framewidth'
-        ];
+    it('should not coerce projection.parallels if type is conic', function() {
+        var projTypes = layoutAttributes.projection.type.values;
 
-        it('should not coerce projection.rotation if type is albers usa', function() {
+        function testOne(projType) {
             layoutIn = {
                 geo: {
                     projection: {
-                        type: 'albers usa',
-                        rotation: {
-                            lon: 10,
-                            lat: 10
-                        }
+                        type: projType,
+                        parallels: [10, 10]
                     }
                 }
             };
 
             supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            expect(layoutOut.geo.projection.rotation).toBeUndefined();
-        });
+        }
 
-        it('should not coerce projection.rotation if type is albers usa (converse)', function() {
+        projTypes.forEach(function(projType) {
+            testOne(projType);
+            if(projType.indexOf('conic') !== -1) {
+                expect(layoutOut.geo.projection.parallels).toBeDefined();
+            }
+            else {
+                expect(layoutOut.geo.projection.parallels).toBeUndefined();
+            }
+        });
+    });
+
+    it('should coerce subunits only when available (usa case)', function() {
+        layoutIn = {
+            geo: { scope: 'usa' }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        subunitFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeDefined();
+        });
+    });
+
+    it('should coerce subunits only when available (default case)', function() {
+        layoutIn = { geo: {} };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        subunitFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeUndefined();
+        });
+    });
+
+    it('should coerce subunits only when available (NA case)', function() {
+        layoutIn = {
+            geo: {
+                scope: 'north america',
+                resolution: 50
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        subunitFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeDefined();
+        });
+    });
+
+    it('should coerce subunits only when available (NA case 2)', function() {
+        layoutIn = {
+            geo: {
+                scope: 'north america',
+                resolution: '50'
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        subunitFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeDefined();
+        });
+    });
+
+    it('should coerce subunits only when available (NA case 2)', function() {
+        layoutIn = {
+            geo: {
+                scope: 'north america'
+            }
+        };
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        subunitFields.forEach(function(field) {
+            expect(layoutOut.geo[field]).toBeUndefined();
+        });
+    });
+
+    it('should not coerce frame unless for world scope', function() {
+        var scopes = layoutAttributes.scope.values;
+
+        function testOne(scope) {
             layoutIn = {
-                geo: {
-                    projection: {
-                        rotation: {
-                            lon: 10,
-                            lat: 10
-                        }
-                    }
-                }
+                geo: { scope: scope }
             };
 
             supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            expect(layoutOut.geo.projection.rotation).toBeDefined();
+        }
+
+        scopes.forEach(function(scope) {
+            testOne(scope);
+            if(scope === 'world') {
+                frameFields.forEach(function(field) {
+                    expect(layoutOut.geo[field]).toBeDefined();
+                });
+            }
+            else {
+                frameFields.forEach(function(field) {
+                    expect(layoutOut.geo[field]).toBeUndefined();
+                });
+            }
         });
+    });
 
-        it('should not coerce coastlines and ocean if type is albers usa', function() {
-            layoutIn = {
-                geo: {
-                    projection: {
-                        type: 'albers usa'
-                    },
-                    showcoastlines: true,
-                    showocean: true
-                }
-            };
+    it('should add geo data-only geos into layoutIn', function() {
+        layoutIn = {};
+        fullData = [{ type: 'scattergeo', geo: 'geo' }];
 
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            seaFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeUndefined();
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        expect(layoutIn.geo).toEqual({});
+    });
+
+    it('should add geo data-only geos into layoutIn (converse)', function() {
+        layoutIn = {};
+        fullData = [{ type: 'scatter' }];
+
+        supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+        expect(layoutIn.geo).toBe(undefined);
+    });
+
+    describe('should default to lon(lat)range to params non-world scopes', function() {
+        var scopeDefaults = constants.scopeDefaults;
+        var scopes = Object.keys(scopeDefaults);
+        var customLonaxisRange = [-42.21313312, 40.321321];
+        var customLataxisRange = [-42.21313312, 40.321321];
+
+        scopes.forEach(function(s) {
+            if(s === 'world') return;
+
+            it('base case for ' + s, function() {
+                layoutIn = {geo: {scope: s}};
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+
+                var dfltLonaxisRange = scopeDefaults[s].lonaxisRange;
+                var dfltLataxisRange = scopeDefaults[s].lataxisRange;
+
+                expect(layoutOut.geo.lonaxis.range).toEqual(dfltLonaxisRange);
+                expect(layoutOut.geo.lataxis.range).toEqual(dfltLataxisRange);
+                expect(layoutOut.geo.lonaxis.tick0).toEqual(dfltLonaxisRange[0]);
+                expect(layoutOut.geo.lataxis.tick0).toEqual(dfltLataxisRange[0]);
             });
-        });
 
-        it('should not coerce coastlines and ocean if type is albers usa (converse)', function() {
-            layoutIn = {
-                geo: {
-                    showcoastlines: true,
-                    showocean: true
-                }
-            };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            seaFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeDefined();
-            });
-        });
-
-        it('should not coerce projection.parallels if type is conic', function() {
-            var projTypes = layoutAttributes.projection.type.values;
-
-            function testOne(projType) {
+            it('custom case for ' + s, function() {
                 layoutIn = {
                     geo: {
-                        projection: {
-                            type: projType,
-                            parallels: [10, 10]
-                        }
+                        scope: s,
+                        lonaxis: {range: customLonaxisRange},
+                        lataxis: {range: customLataxisRange}
                     }
                 };
-
                 supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            }
 
-            projTypes.forEach(function(projType) {
-                testOne(projType);
-                if(projType.indexOf('conic') !== -1) {
-                    expect(layoutOut.geo.projection.parallels).toBeDefined();
+                expect(layoutOut.geo.lonaxis.range).toEqual(customLonaxisRange);
+                expect(layoutOut.geo.lataxis.range).toEqual(customLataxisRange);
+                expect(layoutOut.geo.lonaxis.tick0).toEqual(customLonaxisRange[0]);
+                expect(layoutOut.geo.lataxis.tick0).toEqual(customLataxisRange[0]);
+            });
+        });
+    });
+
+    describe('should adjust default lon(lat)range to projection.rotation in world scopes', function() {
+        var specs = [{
+            geo: {
+                scope: 'world',
+                projection: {
+                    type: 'equirectangular',
+                    rotation: {lon: -75, lat: 45}
                 }
-                else {
-                    expect(layoutOut.geo.projection.parallels).toBeUndefined();
+            },
+            // => -75 +/- 180
+            lonRange: [-255, 105],
+            // => 45 +/- 90
+            latRange: [-45, 135]
+        }, {
+            geo: {
+                scope: 'world',
+                projection: {
+                    type: 'orthographic',
+                    rotation: {lon: -75, lat: 45}
                 }
-            });
-        });
+            },
+            // => -75 +/- 90
+            lonRange: [-165, 15],
+            // => 45 +/- 90
+            latRange: [-45, 135]
+        }, {
+            geo: {
+                lonaxis: {range: [-42.21313312, 40.321321]},
+                lataxis: {range: [-42.21313312, 40.321321]}
+            },
+            lonRange: [-42.21313312, 40.321321],
+            latRange: [-42.21313312, 40.321321]
+        }];
 
-        it('should coerce subunits only when available (usa case)', function() {
-            layoutIn = {
-                geo: { scope: 'usa' }
-            };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            subunitFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeDefined();
-            });
-        });
-
-        it('should coerce subunits only when available (default case)', function() {
-            layoutIn = { geo: {} };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            subunitFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeUndefined();
-            });
-        });
-
-        it('should coerce subunits only when available (NA case)', function() {
-            layoutIn = {
-                geo: {
-                    scope: 'north america',
-                    resolution: 50
-                }
-            };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            subunitFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeDefined();
-            });
-        });
-
-        it('should coerce subunits only when available (NA case 2)', function() {
-            layoutIn = {
-                geo: {
-                    scope: 'north america',
-                    resolution: '50'
-                }
-            };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            subunitFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeDefined();
-            });
-        });
-
-        it('should coerce subunits only when available (NA case 2)', function() {
-            layoutIn = {
-                geo: {
-                    scope: 'north america'
-                }
-            };
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            subunitFields.forEach(function(field) {
-                expect(layoutOut.geo[field]).toBeUndefined();
-            });
-        });
-
-        it('should not coerce frame unless for world scope', function() {
-            var scopes = layoutAttributes.scope.values;
-
-            function testOne(scope) {
-                layoutIn = {
-                    geo: { scope: scope }
-                };
-
+        specs.forEach(function(s, i) {
+            it('- case ' + i, function() {
+                layoutIn = {geo: s.geo};
                 supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            }
 
-            scopes.forEach(function(scope) {
-                testOne(scope);
-                if(scope === 'world') {
-                    frameFields.forEach(function(field) {
-                        expect(layoutOut.geo[field]).toBeDefined();
-                    });
-                }
-                else {
-                    frameFields.forEach(function(field) {
-                        expect(layoutOut.geo[field]).toBeUndefined();
-                    });
-                }
+                expect(layoutOut.geo.lonaxis.range).toEqual(s.lonRange);
+                expect(layoutOut.geo.lataxis.range).toEqual(s.latRange);
             });
-        });
-
-        it('should add geo data-only geos into layoutIn', function() {
-            layoutIn = {};
-            fullData = [{ type: 'scattergeo', geo: 'geo' }];
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            expect(layoutIn.geo).toEqual({});
-        });
-
-        it('should add geo data-only geos into layoutIn (converse)', function() {
-            layoutIn = {};
-            fullData = [{ type: 'scatter' }];
-
-            supplyLayoutDefaults(layoutIn, layoutOut, fullData);
-            expect(layoutIn.geo).toBe(undefined);
         });
     });
 });
