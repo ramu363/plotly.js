@@ -19,7 +19,10 @@ module.exports = {
             {valType: 'number'},
             {valType: 'number'}
         ],
-        description: 'Sets the range of this axis (in degrees).'
+        description: [
+            'Sets the range of this axis (in degrees).',
+            'If *projection* is set, ...'
+        ].join(' ')
     },
     showgrid: {
         valType: 'boolean',

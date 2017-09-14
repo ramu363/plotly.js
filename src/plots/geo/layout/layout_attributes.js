@@ -13,7 +13,6 @@ var constants = require('../constants');
 var geoAxesAttrs = require('./axis_attributes');
 var overrideAll = require('../../../plot_api/edit_types').overrideAll;
 
-
 module.exports = overrideAll({
     domain: {
         x: {
@@ -25,8 +24,9 @@ module.exports = overrideAll({
             ],
             dflt: [0, 1],
             description: [
-                'Sets the horizontal domain of this map',
-                '(in plot fraction).'
+                'Sets the maximum horizontal domain of this map',
+                '(in plot fraction).',
+                'Note that geo subplot are constrained by domain ...'
             ].join(' ')
         },
         y: {
@@ -38,8 +38,28 @@ module.exports = overrideAll({
             ],
             dflt: [0, 1],
             description: [
-                'Sets the vertical domain of this map',
-                '(in plot fraction).'
+                'Sets the maximum vertical domain of this map',
+                '(in plot fraction).',
+                'Note that geo subplot are constrained by domain ...'
+            ].join(' ')
+        }
+    },
+    position: {
+        x: {
+            valType: 'number',
+            role: 'info',
+            description: [
+                'Sets the x position of this subplot in the plotting space',
+                '(in normalized coordinates).',
+                'Use in tandem with ...'
+            ].join(' ')
+        },
+        y: {
+            valType: 'number',
+            role: 'info',
+            description: [
+                'Sets the y position of this subplot in the plotting space',
+                '(in normalized coordinates).'
             ].join(' ')
         }
     },
@@ -95,6 +115,24 @@ module.exports = overrideAll({
                 ].join(' ')
             }
         },
+        center: {
+            lon: {
+                valType: 'number',
+                role: 'info',
+                description: [
+                    'Sets the longitude of the center of the map (in degrees East).',
+                    ' .... defaults to ...'
+                ].join(' ')
+            },
+            lat: {
+                valType: 'number',
+                role: 'info',
+                description: [
+                    'Sets the latitude of the center of the map (in degrees North).',
+                    ' .... defaults to ...'
+                ].join(' ')
+            }
+        },
         parallels: {
             valType: 'info_array',
             role: 'info',
@@ -112,9 +150,33 @@ module.exports = overrideAll({
             valType: 'number',
             role: 'info',
             min: 0,
-            max: 10,
             dflt: 1,
-            description: 'Zooms in or out on the map view.'
+            description: [
+                'Zooms in or out on the map view.',
+                '.. in fractions of ...'
+            ].join(' ')
+        },
+
+        // should really be at root 'geo' level
+        translate: {
+            x: {
+                valType: 'number',
+                role: 'info',
+                min: 0,
+                max: 0,
+                description: [
+                    ' .... defaults to ...'
+                ].join(' ')
+            },
+            y: {
+                valType: 'number',
+                role: 'info',
+                min: 0,
+                max: 0,
+                description: [
+                    ' .... defaults to ...'
+                ].join(' ')
+            }
         }
     },
     showcoastlines: {

@@ -32,6 +32,8 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
     var scopeParams = constants.scopeDefaults[scope];
 
     var resolution = coerce('resolution');
+    coerce('position.x');
+    coerce('position.y');
 
     var projType = coerce('projection.type', scopeParams.projType);
     var isAlbersUsa = projType === 'albers usa';
@@ -42,11 +44,23 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
         coerce('projection.parallels', dfltProjParallels);
     }
 
+    var rotLon, rotLat;
+
     if(!isAlbersUsa) {
         var dfltProjRotate = scopeParams.projRotate || [0, 0, 0];
-        coerce('projection.rotation.lon', dfltProjRotate[0]);
-        coerce('projection.rotation.lat', dfltProjRotate[1]);
+        rotLon = coerce('projection.rotation.lon', dfltProjRotate[0]);
+        rotLat = coerce('projection.rotation.lat', dfltProjRotate[1]);
         coerce('projection.rotation.roll', dfltProjRotate[2]);
+    }
+
+    supplyGeoAxisLayoutDefaults(geoLayoutIn, geoLayoutOut);
+
+    if(!isAlbersUsa) {
+        var lonRange = geoLayoutOut.lonaxis.range;
+        var latRange = geoLayoutOut.lataxis.range;
+
+        coerce('projection.center.lon', lonRange[0] + (lonRange[1] - lonRange[0]) / 2 - rotLon);
+        coerce('projection.center.lat', latRange[0] + (latRange[1] - latRange[0]) / 2 - rotLat);
 
         show = coerce('showcoastlines', !isScoped);
         if(show) {
@@ -99,19 +113,7 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
 
     coerce('bgcolor');
 
-    supplyGeoAxisLayoutDefaults(geoLayoutIn, geoLayoutOut);
-
-    // bind a few helper variables
-    geoLayoutOut._isHighRes = resolution === 50;
-    geoLayoutOut._clipAngle = constants.lonaxisSpan[projType] / 2;
-    geoLayoutOut._isAlbersUsa = isAlbersUsa;
-    geoLayoutOut._isConic = isConic;
+    // bind a few helper field that are used downstream
     geoLayoutOut._isScoped = isScoped;
-
-    var rotation = geoLayoutOut.projection.rotation || {};
-    geoLayoutOut.projection._rotate = [
-        -rotation.lon || 0,
-        -rotation.lat || 0,
-        rotation.roll || 0
-    ];
+    geoLayoutOut._isConic = isConic;
 }

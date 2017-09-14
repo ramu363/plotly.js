@@ -11,44 +11,38 @@
 
 var d3 = require('d3');
 
+var Lib = require('../../lib');
 var Color = require('../../components/color');
 var Drawing = require('../../components/drawing');
 var Colorscale = require('../../components/colorscale');
 
 var getTopojsonFeatures = require('../../lib/topojson_utils').getTopojsonFeatures;
 var locationToFeature = require('../../lib/geo_location_utils').locationToFeature;
-var arrayToCalcItem = require('../../lib/array_to_calc_item');
 
 module.exports = function plot(geo, calcData) {
-    var gChoropleth = geo.layers.backplot.select('.choroplethlayer');
+    for(var i = 0; i < calcData.length; i++) {
+        calcGeoJSON(calcData[i], geo.topojson);
+    }
 
     function keyFunc(d) { return d[0].trace.uid; }
 
-    var gChoroplethTraces = gChoropleth
+    var gTraces = geo.layers.backplot.select('.choroplethlayer')
         .selectAll('g.trace.choropleth')
         .data(calcData, keyFunc);
 
-    gChoroplethTraces.enter().append('g')
+    gTraces.enter().append('g')
         .attr('class', 'trace choropleth');
 
-    gChoroplethTraces.exit().remove();
+    gTraces.exit().remove();
 
-    gChoroplethTraces.each(function(calcTrace) {
-        var trace = calcTrace[0].trace,
-            cdi = calcGeoJSON(trace, geo.topojson);
+    gTraces.each(function(calcTrace) {
+        var sel = calcTrace[0].node3 = d3.select(this);
 
-        var paths = d3.select(this)
-            .selectAll('path.choroplethlocation')
-            .data(cdi);
+        var paths = sel.selectAll('path.choroplethlocation')
+            .data(Lib.identity);
 
         paths.enter().append('path')
-            .classed('choroplethlocation', true)
-            .on('mouseover', function(pt) {
-                geo.choroplethHoverPt = pt;
-            })
-            .on('mouseout', function() {
-                geo.choroplethHoverPt = null;
-            });
+            .classed('choroplethlocation', true);
 
         paths.exit().remove();
     });
@@ -56,37 +50,20 @@ module.exports = function plot(geo, calcData) {
     style(geo);
 };
 
-function calcGeoJSON(trace, topojson) {
-    var cdi = [],
-        locations = trace.locations,
-        len = locations.length,
-        features = getTopojsonFeatures(trace, topojson),
-        markerLine = (trace.marker || {}).line || {};
-
-    var feature;
+function calcGeoJSON(calcTrace, topojson) {
+    var trace = calcTrace[0].trace;
+    var len = calcTrace.length;
+    var features = getTopojsonFeatures(trace, topojson);
 
     for(var i = 0; i < len; i++) {
-        feature = locationToFeature(trace.locationmode, locations[i], features);
+        var calcPt = calcTrace[i];
+        var feature = locationToFeature(trace.locationmode, calcPt.loc, features);
 
-        if(!feature) continue;  // filter the blank features here
+        if(!feature) continue;
 
-        // 'data_array' attributes
-        feature.z = trace.z[i];
-        if(trace.text !== undefined) feature.tx = trace.text[i];
-
-        // 'arrayOk' attributes
-        arrayToCalcItem(markerLine.color, feature, 'mlc', i);
-        arrayToCalcItem(markerLine.width, feature, 'mlw', i);
-
-        // for event data
-        feature.index = i;
-
-        cdi.push(feature);
+        calcPt.geojson = feature;
+        calcPt.ct = feature.properties.ct;
     }
-
-    if(cdi.length > 0) cdi[0].trace = trace;
-
-    return cdi;
 }
 
 function style(geo) {
@@ -104,9 +81,11 @@ function style(geo) {
             )
         );
 
-        s.selectAll('path.choroplethlocation').each(function(pt) {
+        s.selectAll('path.choroplethlocation').each(function(_, i) {
+            var pt = calcTrace[i];
+
             d3.select(this)
-                .attr('fill', function(pt) { return sclFunc(pt.z); })
+                .attr('fill', sclFunc(pt.z))
                 .call(Color.stroke, pt.mlc || markerLine.color)
                 .call(Drawing.dashLine, '', pt.mlw || markerLine.width || 0);
         });

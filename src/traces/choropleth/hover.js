@@ -22,13 +22,11 @@ module.exports = function hoverPoints(pointData) {
 
     if(!pt) return;
 
-    var centroid = geo.projection(pt.properties.ct);
-
-    pointData.x0 = pointData.x1 = centroid[0];
-    pointData.y0 = pointData.y1 = centroid[1];
+    pointData.x0 = pointData.x1 = pointData.xa.c2p(pt.ct);
+    pointData.y0 = pointData.y1 = pointData.ya.c2p(pt.ct);
 
     pointData.index = pt.index;
-    pointData.location = pt.id;
+    pointData.location = pt.loc;
     pointData.z = pt.z;
 
     makeHoverInfo(pointData, trace, pt, geo.mockAxis);
@@ -55,10 +53,11 @@ function makeHoverInfo(pointData, trace, pt, axis) {
         return Axes.tickText(axis, axis.c2l(val), 'hover').text;
     }
 
-    if(hasIdAsNameLabel) pointData.nameOverride = pt.id;
-    else {
+    if(hasIdAsNameLabel) {
+        pointData.nameOverride = pt.loc;
+    } else {
         if(hasName) pointData.nameOverride = trace.name;
-        if(hasLocation) text.push(pt.id);
+        if(hasLocation) text.push(pt.loc);
     }
 
     if(hasZ) text.push(formatter(pt.z));

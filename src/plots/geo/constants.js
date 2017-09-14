@@ -135,6 +135,8 @@ params.fillLayers = ['ocean', 'land', 'lakes'];
 // base layer with a only a line color
 params.lineLayers = ['subunits', 'countries', 'coastlines', 'rivers', 'frame'];
 
+// TODO should 'frame' sit below or above front and back plot?
+
 params.layers = [
     'bg',
     'ocean', 'land', 'lakes',

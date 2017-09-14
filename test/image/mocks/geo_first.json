@@ -13,8 +13,13 @@
         }
     ],
     "layout": {
-        "showframe": true,
+        "geo": {
+            "showframe": false,
+            "showlakes": true,
+            "showrivers": true
+        },
         "width": 600,
-        "height": 440
+        "height": 440,
+        "dragmode": "select"
     }
 }
