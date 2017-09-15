@@ -95,25 +95,6 @@ module.exports = overrideAll({
             ].join(' ')
         }
     },
-    position: {
-        x: {
-            valType: 'number',
-            role: 'info',
-            description: [
-                'Sets the x position of this subplot in the plotting space',
-                '(in normalized coordinates).',
-                'Use in tandem with ...'
-            ].join(' ')
-        },
-        y: {
-            valType: 'number',
-            role: 'info',
-            description: [
-                'Sets the y position of this subplot in the plotting space',
-                '(in normalized coordinates).'
-            ].join(' ')
-        }
-    },
     resolution: {
         valType: 'enumerated',
         values: [110, 50],
@@ -186,9 +167,29 @@ module.exports = overrideAll({
             dflt: 1,
             description: [
                 'Zooms in or out on the map view.',
-                '.. in fractions of ...'
+                'A scale of *1* corresponds to the largest zoom level',
+                'that fits the map\'s lon and lat ranges. '
             ].join(' ')
         },
+    },
+    center: {
+        lon: {
+            valType: 'number',
+            role: 'info',
+            description: [
+                'Sets the longitude of the map\'s center.',
+                'By default, the map\'s center lies at the middle of the range ',
+                ' ... '
+            ].join(' ')
+        },
+        lat: {
+            valType: 'number',
+            role: 'info',
+            description: [
+                'Sets the latitude of the map\'s center.',
+                'Use in tandem with ...'
+            ].join(' ')
+        }
     },
     showcoastlines: {
         valType: 'boolean',

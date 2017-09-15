@@ -23,7 +23,7 @@ function createGeoZoom(geo, geoLayout) {
 
     if(geoLayout._isScoped) {
         zoomConstructor = zoomScoped;
-    } else if(projection.clipAngle()) {
+    } else if(geoLayout._isClipped) {
         zoomConstructor = zoomClipped;
     } else {
         zoomConstructor = zoomNonClipped;
@@ -40,12 +40,11 @@ module.exports = createGeoZoom;
 function initZoom(geo, projection) {
     return d3.behavior.zoom()
         .translate(projection.translate())
-        .scale(projection.scale())
-        .scaleExtent([0.5 * geo.fullScale, 100 * geo.fullScale]);
+        .scale(projection.scale());
 }
 
 // sync zoom updates with user & full layout
-function sync(geo, projection) {
+function sync(geo, projection, cb) {
     var id = geo.id;
     var gd = geo.graphDiv;
     var userOpts = gd.layout[id];
@@ -63,20 +62,8 @@ function sync(geo, projection) {
         }
     }
 
-    var _rotate = projection.rotate();
-    set('projection.rotation.lon', -_rotate[0]);
-    set('projection.rotation.lat', -_rotate[1]);
-
-//     var _center = projection.center();
-//     set('projection.center.lon', _center[0]);
-//     set('projection.center.lat', _center[1]);
-
-    set('projection.scale', projection.scale() / geo.fullScale);
-
-    var _translate = projection.translate();
-    set('position.x', _translate[0]);
-    set('position.y', _translate[1]);
-
+    cb(set);
+    set('projection.scale', projection.scale() / geo.fitScale);
     gd.emit('plotly_relayout', eventData);
 }
 
@@ -95,9 +82,20 @@ function zoomScoped(geo, projection) {
         geo.render();
     }
 
+    function syncCb(set) {
+        var bounds = geo.bounds;
+        var center = projection.invert([
+            bounds[0][0] + (bounds[1][0] - bounds[0][0]) / 2,
+            bounds[0][1] + (bounds[1][1] - bounds[0][1]) / 2
+        ]);
+
+        set('center.lon', center[0]);
+        set('center.lat', center[1]);
+    }
+
     function handleZoomend() {
         d3.select(this).style(zoomendStyle);
-        sync(geo, projection);
+        sync(geo, projection, syncCb);
     }
 
     zoom
@@ -163,7 +161,20 @@ function zoomNonClipped(geo, projection) {
 
     function handleZoomend() {
         d3.select(this).style(zoomendStyle);
-        sync(geo, projection);
+        sync(geo, projection, syncCb);
+    }
+
+    function syncCb(set) {
+        var rotate = projection.rotate();
+        var bounds = geo.bounds;
+        var center = projection.invert([
+            bounds[0][0] + (bounds[1][0] - bounds[0][0]) / 2,
+            bounds[0][1] + (bounds[1][1] - bounds[0][1]) / 2
+        ]);
+
+        set('projection.rotation.lon', -rotate[0]);
+        set('center.lon', center[0]);
+        set('center.lat', center[1]);
     }
 
     zoom
@@ -243,7 +254,7 @@ function zoomClipped(geo, projection) {
         d3.select(this).style(zoomendStyle);
         zoomOn.call(zoom, 'zoom', null);
         zoomended(event.of(this, arguments));
-        sync(geo, projection);
+        sync(geo, projection, syncCb);
     })
     .on('zoom.redraw', function() {
         geo.render();
@@ -259,6 +270,12 @@ function zoomClipped(geo, projection) {
 
     function zoomended(dispatch) {
         if(!--zooming) dispatch({type: 'zoomend'});
+    }
+
+    function syncCb(set) {
+        var _rotate = projection.rotate();
+        set('projection.rotation.lon', -_rotate[0]);
+        set('projection.rotation.lat', -_rotate[1]);
     }
 
     return d3.rebind(zoom, event, 'on');

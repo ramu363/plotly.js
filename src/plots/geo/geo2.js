@@ -38,27 +38,25 @@ function Geo(opts) {
     this.isStatic = opts.staticPlot;
 
     var geoLayout = this.graphDiv._fullLayout[this.id];
-    var position = geoLayout.position || {};
+    var center = geoLayout.center || {};
     var projLayout = geoLayout.projection;
     var rotation = projLayout.rotation || {};
-    var center = projLayout.center || {};
 
     this.viewInitial = {
-        'position.x': position.x,
-        'position.y': position.y,
+        'center.lon': center.lon,
+        'center.lat': center.lat,
         'projection.scale': projLayout.scale,
         'projection.rotation.lon': rotation.lon,
-        'projection.rotation.lat': rotation.lat,
-        'projection.center.lon': center.lon,
-        'projection.center.lat': center.lat
+        'projection.rotation.lat': rotation.lat
     };
 
     this.topojsonName = null;
     this.topojson = null;
 
     this.projection = null;
-    this.fullScale = null;
+    this.fitScale = null;
     this.bounds = null;
+    this.midPt = null;
 
     this.hasChoropleth = false;
     this.choroplethHoverPt = null;
@@ -135,6 +133,7 @@ proto.fetchTopojson = function() {
 proto.update = function(geoCalcData, fullLayout) {
     var geoLayout = fullLayout[this.id];
 
+    // important: maps with choropleth traces have a different layer order
     this.hasChoropleth = false;
     for(var i = 0; i < geoCalcData.length; i++) {
         if(geoCalcData[i][0].trace.type === 'choropleth') {
@@ -162,21 +161,21 @@ proto.update = function(geoCalcData, fullLayout) {
 };
 
 proto.updateProjection = function(fullLayout, geoLayout) {
-    var projLayout = geoLayout.projection;
     var gs = fullLayout._size;
     var domain = geoLayout.domain;
+    var projLayout = geoLayout.projection;
+    var rotation = projLayout.rotation || {};
+    var center = geoLayout.center || {};
 
     var projection = this.projection = getProjection(geoLayout);
 
-    var rotation = projLayout.rotation || {};
-    var center = projLayout.center || {};
-
     // set 'pre-fit' projection
     projection
+        .center([center.lon - rotation.lon, center.lat - rotation.lat])
         .rotate([-rotation.lon, -rotation.lat, rotation.roll])
-        .center([center.lon, center.lat])
         .parallels(projLayout.parallels);
 
+    // setup subplot extent [[x0,y0], [x1,y1]]
     var extent = [[
         gs.l + gs.w * domain.x[0],
         gs.t + gs.h * (1 - domain.y[1])
@@ -184,33 +183,39 @@ proto.updateProjection = function(fullLayout, geoLayout) {
         gs.l + gs.w * domain.x[1],
         gs.t + gs.h * (1 - domain.y[0])
     ]];
-    var rangeBox = makeRangeBox(
-        geoLayout.lonaxis.range,
-        geoLayout.lataxis.range
-    );
-    var fullRangeBox = makeRangeBox(
-        geoLayout.lonaxis._fullRange,
-        geoLayout.lataxis._fullRange
-    );
 
-    // fit to full lon/lat ranges to find the projection's full scale value
-    projection.fitExtent(extent, fullRangeBox);
-    this.fullScale = projection.scale();
+    var rangeBox = makeRangeBox(geoLayout.lonaxis.range, geoLayout.lataxis.range);
 
-    // fit to set lon/lat ranges
+    // fit projection 'scale' and 'translate' to set lon/lat ranges
     projection.fitExtent(extent, rangeBox);
 
-    // TODO add logic for 'position'
+    var b = this.bounds = projection.getBounds(rangeBox);
+    var s = this.fitScale = projection.scale();
+    var t = projection.translate();
 
-    // TODO test 'center' attribute
+    if(
+        !isFinite(b[0][0]) || !isFinite(b[0][1]) ||
+        !isFinite(b[1][0]) || !isFinite(b[1][1]) ||
+        isNaN(t[0]) || isNaN(t[0])
+    ) {
+        Lib.warn('Invalid geo settings');
+    }
 
-    // find bounds
-    this.bounds = projection.getBounds(rangeBox);
-    projection.clipExtent(this.bounds);
+    // px coordinates of view mid-point,
+    // useful to update `geo.center` after interactions
+    var midPt = this.midPt = [
+        b[0][0] + (b[1][0] - b[0][0]) / 2,
+        b[0][1] + (b[1][1] - b[0][1]) / 2
+    ];
 
-    // scale to set zoom level
-    var fitScale = projection.scale();
-    projection.scale(projLayout.scale * fitScale);
+    // adjust projection to user setting
+    projection
+        .scale(projLayout.scale * s)
+        .translate([t[0] + (midPt[0] - t[0]), t[1] + (midPt[1] - t[1])])
+        .clipExtent(b);
+
+    // TODO we'll need to special algo for albersUsa projection
+    // as this particular projection does not support `.center`
 };
 
 proto.updateBaseLayers = function(fullLayout, geoLayout) {

@@ -26,13 +26,10 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut, fullData) {
 function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
     var show;
 
+    var resolution = coerce('resolution');
     var scope = coerce('scope');
     var isScoped = (scope !== 'world');
     var scopeParams = constants.scopeDefaults[scope];
-
-    var resolution = coerce('resolution');
-    coerce('position.x');
-    coerce('position.y');
 
     var projType = coerce('projection.type', scopeParams.projType);
     var isAlbersUsa = projType === 'albers usa';
@@ -62,6 +59,14 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
     }
 
     coerce('projection.scale');
+
+    geoAxisDefaults(geoLayoutIn, geoLayoutOut);
+
+    var lonRange = geoLayoutOut.lonaxis.range;
+    coerce('center.lon', lonRange[0] + (lonRange[1] - lonRange[0]) / 2);
+
+    var latRange = geoLayoutOut.lataxis.range;
+    coerce('center.lat', latRange[0] + (latRange[1] - latRange[0]) / 2);
 
     show = coerce('showland');
     if(show) coerce('landcolor');
@@ -101,9 +106,8 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
 
     coerce('bgcolor');
 
-    geoAxisDefaults(geoLayoutIn, geoLayoutOut);
-
     // bind a few helper field that are used downstream
+    geoLayoutOut._isClipped = !!constants.lonaxisSpan[projType];
     geoLayoutOut._isScoped = isScoped;
     geoLayoutOut._isConic = isConic;
 }
