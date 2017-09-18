@@ -15,6 +15,7 @@ var Lib = require('../../lib');
 var Color = require('../../components/color');
 var Drawing = require('../../components/drawing');
 var Colorscale = require('../../components/colorscale');
+var polygon = require('../../lib/polygon');
 
 var getTopojsonFeatures = require('../../lib/topojson_utils').getTopojsonFeatures;
 var locationToFeature = require('../../lib/geo_location_utils').locationToFeature;
@@ -54,8 +55,9 @@ function calcGeoJSON(calcTrace, topojson) {
     var trace = calcTrace[0].trace;
     var len = calcTrace.length;
     var features = getTopojsonFeatures(trace, topojson);
+    var i, j, k;
 
-    for(var i = 0; i < len; i++) {
+    for(i = 0; i < len; i++) {
         var calcPt = calcTrace[i];
         var feature = locationToFeature(trace.locationmode, calcPt.loc, features);
 
@@ -63,6 +65,25 @@ function calcGeoJSON(calcTrace, topojson) {
 
         calcPt.geojson = feature;
         calcPt.ct = feature.properties.ct;
+
+        var geometry = feature.geometry;
+        var coords = geometry.coordinates;
+        calcPt._polygons = [];
+
+        switch(geometry.type) {
+            case 'MultiPolygon':
+                for(j = 0; j < coords.length; j++) {
+                    for(k = 0; k < coords[j].length; k++) {
+                        calcPt._polygons.push(polygon.tester(coords[j][k]));
+                    }
+                }
+                break;
+            case 'Polygon':
+                for(j = 0; j < coords.length; j++) {
+                    calcPt._polygons.push(polygon.tester(coords[j]));
+                }
+                break;
+        }
     }
 }
 

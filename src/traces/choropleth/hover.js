@@ -12,15 +12,29 @@
 var Axes = require('../../plots/cartesian/axes');
 var attributes = require('./attributes');
 
-module.exports = function hoverPoints(pointData) {
+module.exports = function hoverPoints(pointData, xval, yval) {
     var cd = pointData.cd;
     var trace = cd[0].trace;
     var geo = pointData.subplot;
 
-    // set on choropleth paths 'mouseover'
-    var pt = geo.choroplethHoverPt;
+    var pt, i, j, isInside;
 
-    if(!pt) return;
+    for(i = 0; i < cd.length; i++) {
+        pt = cd[i];
+        isInside = false;
+
+        if(pt._polygons) {
+            for(j = 0; j < pt._polygons.length; j++) {
+                if(pt._polygons[j].contains([xval, yval])) {
+                    isInside = !isInside;
+                }
+            }
+
+            if(isInside) break;
+        }
+    }
+
+    if(!isInside || !pt) return;
 
     pointData.x0 = pointData.x1 = pointData.xa.c2p(pt.ct);
     pointData.y0 = pointData.y1 = pointData.ya.c2p(pt.ct);

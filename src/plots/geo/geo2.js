@@ -59,7 +59,6 @@ function Geo(opts) {
     this.midPt = null;
 
     this.hasChoropleth = false;
-    this.choroplethHoverPt = null;
 
     this.traceHash = {};
     this.layers = {};
@@ -256,7 +255,6 @@ proto.updateBaseLayers = function(fullLayout, geoLayout) {
             var layer = layers[d] = d3.select(this);
 
             if(d === 'bg') {
-                // TODO ... pointer-event does not work ...
                 _this.bgRect = layer.append('rect').style('pointer-events', 'all');
             } else if(isAxisLayer(d)) {
                 basePaths[d] = layer.append('path');
@@ -408,10 +406,6 @@ proto.updateFx = function(fullLayout, geoLayout) {
         Fx.hover(gd, d3.event, _this.id);
     });
 
-    _this.dataPaths.choropleth
-        .on('mouseover', function(pt) { _this.choroplethHoverPt = pt; })
-        .on('mouseout', function() { _this.choroplethHoverPt = null; });
-
     framework.on('mouseout', function() {
         Fx.loneUnhover(fullLayout._toppaper);
     });
@@ -537,7 +531,7 @@ function getProjection(geoLayout) {
             return angle > maxAngle;
         } else {
             // TODO does this ever happen??
-            return null;
+            return false;
         }
     };
 
