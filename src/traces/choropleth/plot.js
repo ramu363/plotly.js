@@ -65,6 +65,7 @@ function calcGeoJSON(calcTrace, topojson) {
 
         calcPt.geojson = feature;
         calcPt.ct = feature.properties.ct;
+        calcPt.index = i;
 
         var geometry = feature.geometry;
         var coords = geometry.coordinates;
