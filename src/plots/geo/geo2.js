@@ -512,7 +512,7 @@ function getProjection(geoLayout) {
 
     var projection = d3.geo[constants.projNames[projType]]();
 
-    var clipAngle = constants.lonaxisSpan[projType] ?
+    var clipAngle = geoLayout._isClipped ?
         constants.lonaxisSpan[projType] / 2 :
         null;
 
