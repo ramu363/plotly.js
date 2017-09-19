@@ -84,10 +84,7 @@ function zoomScoped(geo, projection) {
 
     function syncCb(set) {
         var bounds = geo.bounds;
-        var center = projection.invert([
-            bounds[0][0] + (bounds[1][0] - bounds[0][0]) / 2,
-            bounds[0][1] + (bounds[1][1] - bounds[0][1]) / 2
-        ]);
+        var center = projection.invert(geo.midPt);
 
         set('center.lon', center[0]);
         set('center.lat', center[1]);
@@ -167,10 +164,7 @@ function zoomNonClipped(geo, projection) {
     function syncCb(set) {
         var rotate = projection.rotate();
         var bounds = geo.bounds;
-        var center = projection.invert([
-            bounds[0][0] + (bounds[1][0] - bounds[0][0]) / 2,
-            bounds[0][1] + (bounds[1][1] - bounds[0][1]) / 2
-        ]);
+        var center = projection.invert(geo.midPt);
 
         set('projection.rotation.lon', -rotate[0]);
         set('center.lon', center[0]);
