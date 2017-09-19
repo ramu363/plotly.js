@@ -215,8 +215,17 @@ proto.updateProjection = function(fullLayout, geoLayout) {
         .translate([t[0] + (midPt[0] - t[0]), t[1] + (midPt[1] - t[1])])
         .clipExtent(b);
 
-    // TODO we'll need to special algo for albersUsa projection
-    // as this particular projection does not support `.center`
+    // the 'albers usa' projection does not expose a 'center' method
+    // so here's this hack to make it respond to 'geoLayout.center'
+    if(geoLayout._isAlbersUsa) {
+        var centerPx = projection([center.lon, center.lat]);
+        var tt = projection.translate();
+
+        projection.translate([
+            tt[0] - (centerPx[0] - tt[0]),
+            tt[1] - (centerPx[1] - tt[1])
+        ]);
+    }
 };
 
 proto.updateBaseLayers = function(fullLayout, geoLayout) {

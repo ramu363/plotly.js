@@ -98,8 +98,22 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
         if(show) coerce('oceancolor');
     }
 
-    coerce('center.lon', isScoped ? centerLon : projLon);
-    coerce('center.lat', latRange[0] + (latRange[1] - latRange[0]) / 2);
+    var centerLonDflt;
+    var centerLatDflt;
+
+    if(isAlbersUsa) {
+        // 'albers usa' does not have a 'center',
+        // these values were found using via:
+        //   projection.invert([geoLayout.center.lon, geoLayoutIn.center.lat])
+        centerLonDflt = -96.6;
+        centerLatDflt = 38.7;
+    } else {
+        centerLonDflt = isScoped ? centerLon : projLon;
+        centerLatDflt = latRange[0] + (latRange[1] - latRange[0]) / 2;
+    }
+
+    coerce('center.lon', centerLonDflt);
+    coerce('center.lat', centerLatDflt);
 
     if(isConic) {
         var dfltProjParallels = scopeParams.projParallels || [0, 60];
