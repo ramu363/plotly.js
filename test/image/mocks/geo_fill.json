@@ -91,7 +91,8 @@
   "layout": {
     "geo": {
       "projection": {
-        "type": "natural earth"
+        "type": "natural earth",
+        "rotation": {"lon": 0}
       },
       "lonaxis": { 
         "range": [-80, -65]

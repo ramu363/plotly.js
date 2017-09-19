@@ -505,6 +505,7 @@ proto.render = function() {
 function getProjection(geoLayout) {
     var projLayout = geoLayout.projection;
     var projType = projLayout.type;
+
     var projection = d3.geo[constants.projNames[projType]]();
 
     var clipAngle = constants.lonaxisSpan[projType] ?
@@ -599,19 +600,16 @@ function makeGraticule(axisName, geoLayout) {
 // with well-defined direction
 //
 // Note that clipPad padding is added around range to avoid aliasing.
-//
-// TODO is this enough to handle ALL cases?
-// -- this makes scaling less precise than using d3.geo.graticule
-//    as great circles can overshoot the boundary
-//    (that's not a big deal I think)
-//
-// See https://github.com/plotly/plotly.js/issues/1698
 function makeRangeBox(lon, lat) {
     var clipPad = constants.clipPad;
     var lon0 = lon[0] + clipPad;
     var lon1 = lon[1] - clipPad;
     var lat0 = lat[0] + clipPad;
     var lat1 = lat[1] - clipPad;
+
+    // to cross antimeridian w/o ambiguity
+    if(lon0 > 0 && lon1 < 0) lon1 += 360;
+
     var dlon4 = (lon1 - lon0) / 4;
 
     return {

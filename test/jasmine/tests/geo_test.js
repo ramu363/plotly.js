@@ -28,7 +28,7 @@ function move(fromX, fromY, toX, toY, delay) {
     });
 }
 
-fdescribe('Test Geo layout defaults', function() {
+describe('Test Geo layout defaults', function() {
     'use strict';
 
     var layoutAttributes = Geo.layoutAttributes;
@@ -71,6 +71,7 @@ fdescribe('Test Geo layout defaults', function() {
 
         supplyLayoutDefaults(layoutIn, layoutOut, fullData);
         expect(layoutOut.geo.projection.rotation).toBeUndefined();
+        expect(layoutOut.geo.scope).toEqual('usa');
     });
 
     it('should not coerce projection.rotation if type is albers usa (converse)', function() {
@@ -87,6 +88,7 @@ fdescribe('Test Geo layout defaults', function() {
 
         supplyLayoutDefaults(layoutIn, layoutOut, fullData);
         expect(layoutOut.geo.projection.rotation).toBeDefined();
+        expect(layoutOut.geo.scope).toEqual('world');
     });
 
     it('should not coerce coastlines and ocean if type is albers usa', function() {
@@ -140,8 +142,7 @@ fdescribe('Test Geo layout defaults', function() {
             testOne(projType);
             if(projType.indexOf('conic') !== -1) {
                 expect(layoutOut.geo.projection.parallels).toBeDefined();
-            }
-            else {
+            } else {
                 expect(layoutOut.geo.projection.parallels).toBeUndefined();
             }
         });
@@ -225,8 +226,7 @@ fdescribe('Test Geo layout defaults', function() {
                 frameFields.forEach(function(field) {
                     expect(layoutOut.geo[field]).toBeDefined();
                 });
-            }
-            else {
+            } else {
                 frameFields.forEach(function(field) {
                     expect(layoutOut.geo[field]).toBeUndefined();
                 });
@@ -331,6 +331,129 @@ fdescribe('Test Geo layout defaults', function() {
 
                 expect(layoutOut.geo.lonaxis.range).toEqual(s.lonRange);
                 expect(layoutOut.geo.lataxis.range).toEqual(s.latRange);
+            });
+        });
+    });
+
+    describe('should default projection.rotation.lon to lon-center of world-scope maps', function() {
+        var specs = [
+            { lonRange: [10, 80], projLon: 45 },
+            { lonRange: [-45, -10], projLon: -27.5 },
+            { lonRange: [-45, 45], projLon: 0 },
+            { lonRange: [-140, 140], projLon: 0 },
+            // N.B. 180 not -180 after removing ambiguity across antimeridian
+            { lonRange: [140, -140], projLon: 180 }
+        ];
+
+        specs.forEach(function(s, i) {
+            it('- case ' + i, function() {
+                layoutIn = {
+                    geo: { lonaxis: {range: s.lonRange} }
+                };
+
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+                expect(layoutOut.geo.lonaxis.range)
+                    .toEqual(s.lonRange, 'lonaxis.range');
+                expect(layoutOut.geo.projection.rotation.lon)
+                    .toEqual(s.projLon, 'computed projection rotation lon');
+            });
+        });
+
+        var scope = 'europe';
+        var dflt = constants.scopeDefaults[scope].projRotate[0];
+
+        specs.forEach(function(s, i) {
+            it('- converse ' + i, function() {
+                layoutIn = {
+                    geo: {
+                        scope: 'europe',
+                        lonaxis: {range: s.lonRange}
+                    }
+                };
+
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+                expect(layoutOut.geo.lonaxis.range)
+                    .toEqual(s.lonRange, 'lonaxis.range');
+                expect(layoutOut.geo.projection.rotation.lon)
+                    .toEqual(dflt, 'scope dflt projection rotation lon');
+            });
+        });
+    });
+
+    describe('should default center.lon', function() {
+        var specs = [
+            { lonRange: [10, 80], projLon: 0, centerLon: 45 },
+            { lonRange: [-45, -10], projLon: -20, centerLon: -27.5 },
+            { lonRange: [-45, 45], projLon: 5, centerLon: 0 },
+            { lonRange: [-140, 140], projLon: 0, centerLon: 0 },
+            { lonRange: [140, -140], projLon: 160, centerLon: 180 }
+        ];
+
+        specs.forEach(function(s, i) {
+            it('to projection.rotation.lon on world maps - case ' + i, function() {
+                layoutIn = {
+                    geo: {
+                        lonaxis: {range: s.lonRange},
+                        projection: {
+                            rotation: {lon: s.projLon}
+                        }
+                    }
+                };
+
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+                expect(layoutOut.geo.lonaxis.range)
+                    .toEqual(s.lonRange, 'lonaxis.range');
+                expect(layoutOut.geo.projection.rotation.lon)
+                    .toEqual(s.projLon, 'projection.rotation.lon');
+                expect(layoutOut.geo.center.lon)
+                    .toEqual(s.projLon, 'center lon (inherited from projection.rotation.lon');
+            });
+        });
+
+        var scope = 'africa';
+
+        specs.forEach(function(s, i) {
+            it('to lon-center on scoped maps - case ' + i, function() {
+                layoutIn = {
+                    geo: {
+                        scope: scope,
+                        lonaxis: {range: s.lonRange},
+                        projection: {
+                            rotation: {lon: s.projLon}
+                        }
+                    }
+                };
+
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+                expect(layoutOut.geo.lonaxis.range)
+                    .toEqual(s.lonRange, 'lonaxis.range');
+                expect(layoutOut.geo.projection.rotation.lon)
+                    .toEqual(s.projLon, 'projection.rotation.lon');
+                expect(layoutOut.geo.center.lon)
+                    .toEqual(s.centerLon, 'computed center lon');
+            });
+        });
+    });
+
+    describe('should default center.lat', function() {
+        var specs = [
+            { latRange: [-90, 90], centerLat: 0 },
+            { latRange: [0, 30], centerLat: 15 },
+            { latRange: [-25, -5], centerLat: -15 }
+        ];
+
+        specs.forEach(function(s, i) {
+            it('- case ' + i, function() {
+                layoutIn = {
+                    geo: { lataxis: {range: s.latRange} }
+                };
+
+                supplyLayoutDefaults(layoutIn, layoutOut, fullData);
+                expect(layoutOut.geo.lataxis.range)
+                    .toEqual(s.latRange, 'lataxis.range');
+                expect(layoutOut.geo.center.lat)
+                    .toEqual(s.centerLat, 'computed center lat');
+
             });
         });
     });
