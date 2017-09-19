@@ -135,27 +135,23 @@ params.fillLayers = ['ocean', 'land', 'lakes'];
 // base layer with a only a line color
 params.lineLayers = ['subunits', 'countries', 'coastlines', 'rivers', 'frame'];
 
-// TODO should 'frame' sit below or above front and back plot?
-
 params.layers = [
     'bg',
     'ocean', 'land', 'lakes',
     'subunits', 'countries', 'coastlines', 'rivers',
-    'lataxis', 'lonaxis',
+    'lataxis', 'lonaxis', 'frame',
     'backplot',
-    'frontplot',
-    'frame'
+    'frontplot'
 ];
 
 params.layersForChoropleth = [
     'bg',
     'ocean', 'land',
     'subunits', 'countries', 'coastlines',
-    'lataxis', 'lonaxis',
+    'lataxis', 'lonaxis', 'frame',
     'backplot',
     'rivers', 'lakes',
-    'frontplot',
-    'frame'
+    'frontplot'
 ];
 
 params.layerNameToAdjective = {

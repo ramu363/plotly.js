@@ -198,6 +198,8 @@ proto.updateProjection = function(fullLayout, geoLayout) {
         isNaN(t[0]) || isNaN(t[0])
     ) {
         Lib.warn('Invalid geo settings');
+
+        // TODO fallback to default ???
     }
 
     // px coordinates of view mid-point,
@@ -299,12 +301,12 @@ proto.updateBaseLayers = function(fullLayout, geoLayout) {
 
 proto.updateDims = function(fullLayout, geoLayout) {
     var b = this.bounds;
-    var frameWidth = geoLayout.framewidth || 0;
+    var hFrameWidth = (geoLayout.framewidth || 0) / 2;
 
-    var l = b[0][0] - frameWidth;
-    var t = b[0][1] - frameWidth;
-    var w = b[1][0] - l + frameWidth;
-    var h = b[1][1] - t + frameWidth;
+    var l = b[0][0] - hFrameWidth;
+    var t = b[0][1] - hFrameWidth;
+    var w = b[1][0] - l + hFrameWidth;
+    var h = b[1][1] - t + hFrameWidth;
 
     Drawing.setRect(this.clipRect, l, t, w, h);
 
