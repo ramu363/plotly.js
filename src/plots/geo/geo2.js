@@ -340,6 +340,10 @@ proto.updateFx = function(fullLayout, geoLayout) {
         _this.updateProjection(fullLayout, view);
         _this.updateFx(fullLayout, geoLayout);
         _this.render();
+
+        // TODO call sync !!!
+        //
+        //
     }
 
     function invert(lonlat) {
