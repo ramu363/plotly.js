@@ -356,7 +356,10 @@ proto.updateFx = function(fullLayout, geoLayout) {
     }
 
     function invert(lonlat) {
-        return _this.projection.invert(lonlat);
+        return _this.projection.invert([
+            lonlat[0] + _this.xaxis._offset,
+            lonlat[1] + _this.yaxis._offset
+        ]);
     }
 
     if(dragMode === 'pan') {
@@ -372,7 +375,7 @@ proto.updateFx = function(fullLayout, geoLayout) {
         if(dragMode === 'select') {
             fillRangeItems = function(eventData, poly) {
                 var ranges = eventData.range = {};
-                ranges[self.id] = [
+                ranges[_this.id] = [
                     invert([poly.xmin, poly.ymin]),
                     invert([poly.xmax, poly.ymax])
                 ];
@@ -380,7 +383,7 @@ proto.updateFx = function(fullLayout, geoLayout) {
         } else if(dragMode === 'lasso') {
             fillRangeItems = function(eventData, poly, pts) {
                 var dataPts = eventData.lassoPoints = {};
-                dataPts[self.id] = pts.filtered.map(invert);
+                dataPts[_this.id] = pts.filtered.map(invert);
             };
         }
 
