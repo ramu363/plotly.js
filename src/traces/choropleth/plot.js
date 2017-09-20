@@ -61,7 +61,10 @@ function calcGeoJSON(calcTrace, topojson) {
         var calcPt = calcTrace[i];
         var feature = locationToFeature(trace.locationmode, calcPt.loc, features);
 
-        if(!feature) continue;
+        if(!feature) {
+            calcPt.geojson = null;
+            continue;
+        }
 
         calcPt.geojson = feature;
         calcPt.ct = feature.properties.ct;

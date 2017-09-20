@@ -59,8 +59,8 @@ function Geo(opts) {
     this.midPt = null;
 
     this.hasChoropleth = false;
-
     this.traceHash = {};
+
     this.layers = {};
     this.basePaths = {};
     this.dataPaths = {};
@@ -258,7 +258,11 @@ proto.updateBaseLayers = function(fullLayout, geoLayout) {
     var join = _this.framework.selectAll('.layer')
         .data(layerData, String);
 
-    join.exit().remove();
+    join.exit().each(function(d) {
+        delete layers[d];
+        delete basePaths[d];
+        d3.select(this).remove();
+    });
 
     join.enter().append('g')
         .attr('class', function(d) { return 'layer ' + d; })
