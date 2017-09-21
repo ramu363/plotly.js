@@ -703,7 +703,7 @@ describe('Test select box and lasso per trace:', function() {
         .then(done);
     }, LONG_TIMEOUT_INTERVAL);
 
-    fit('should work on choropleth traces', function(done) {
+    it('should work on choropleth traces', function(done) {
         gd = createGraphDiv();
 
         var assertPoints = makeAssertPoints(['location', 'z']);

@@ -1414,7 +1414,7 @@ describe('Test geo base layers', function() {
     });
 });
 
-fdescribe('Test geo zoom/pan/drag interactions:', function() {
+describe('Test geo zoom/pan/drag interactions:', function() {
     var gd;
     var eventData;
     var dblClickCnt = 0;
