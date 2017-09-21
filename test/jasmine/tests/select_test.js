@@ -709,6 +709,8 @@ describe('Test select box and lasso per trace:', function() {
         var assertLassoPoints = makeAssertLassoPoints('geo');
 
         var fig = Lib.extendDeep({}, require('@mocks/geo_choropleth-text'));
+        fig.layout.width = 870;
+        fig.layout.height = 450;
         fig.layout.dragmode = 'select';
         fig.layout.geo.scope = 'europe';
 
