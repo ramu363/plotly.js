@@ -1681,8 +1681,8 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var center = geoLayout.center;
             var scale = geoLayout.projection.scale;
 
-            expect(center.lon).toBeCloseTo(attr[0][0], 1, 'center.lon');
-            expect(center.lat).toBeCloseTo(attr[0][1], 1, 'center.lat');
+            expect(center.lon).toBeCloseTo(attr[0][0], -0.5, 'center.lon');
+            expect(center.lat).toBeCloseTo(attr[0][1], -0.5, 'center.lat');
             expect(scale).toBeCloseTo(attr[1], 1, 'zoom');
 
             var geo = geoLayout._subplot;
@@ -1690,11 +1690,11 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var _center = geo.projection.center();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], -0.5, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], -0.5, 'translate[1]');
+            expect(translate[0]).toBeCloseTo(proj[0][0], -0.75, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], -0.75, 'translate[1]');
             expect(_center[0]).toBeCloseTo(proj[1][0], -0.5, 'center[0]');
             expect(_center[1]).toBeCloseTo(proj[1][1], -0.5, 'center[1]');
-            expect(_scale).toBeCloseTo(proj[2], -0.5, 'scale');
+            expect(_scale).toBeCloseTo(proj[2], -1, 'scale');
 
             assertEventData(eventKeys);
         }
@@ -1772,9 +1772,9 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var translate = geo.projection.translate();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], -0.5, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], -0.5, 'translate[1]');
-            expect(_scale).toBeCloseTo(proj[1], -0.5, 'scale');
+            expect(translate[0]).toBeCloseTo(proj[0][0], -1, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], -1, 'translate[1]');
+            expect(_scale).toBeCloseTo(proj[1], -1.5, 'scale');
 
             assertEventData(eventKeys);
         }
