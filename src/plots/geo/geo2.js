@@ -38,19 +38,6 @@ function Geo(opts) {
     this.topojsonURL = opts.topojsonURL;
     this.isStatic = opts.staticPlot;
 
-    var geoLayout = this.graphDiv._fullLayout[this.id];
-    var center = geoLayout.center || {};
-    var projLayout = geoLayout.projection;
-    var rotation = projLayout.rotation || {};
-
-    this.viewInitial = {
-        'center.lon': center.lon,
-        'center.lat': center.lat,
-        'projection.scale': projLayout.scale,
-        'projection.rotation.lon': rotation.lon,
-        'projection.rotation.lat': rotation.lat
-    };
-
     this.topojsonName = null;
     this.topojson = null;
 
@@ -473,6 +460,32 @@ proto.makeFramework = function() {
         exponentformat: 'B'
     };
     Axes.setConvert(_this.mockAxis, fullLayout);
+
+    var geoLayout = fullLayout[_this.id];
+    var center = geoLayout.center || {};
+    var projLayout = geoLayout.projection;
+    var rotation = projLayout.rotation || {};
+
+    if(geoLayout._isScoped) {
+        _this.viewInitial = {
+            'center.lon': center.lon,
+            'center.lat': center.lat,
+            'projection.scale': projLayout.scale
+        };
+    } else if(geoLayout._isClipped) {
+        _this.viewInitial = {
+            'projection.scale': projLayout.scale,
+            'projection.rotation.lon': rotation.lon,
+            'projection.rotation.lat': rotation.lat
+        };
+    } else {
+        _this.viewInitial = {
+            'center.lon': center.lon,
+            'center.lat': center.lat,
+            'projection.scale': projLayout.scale,
+            'projection.rotation.lon': rotation.lon
+        };
+    }
 };
 
 // [hot code path] (re)draw all paths which depend on the projection
