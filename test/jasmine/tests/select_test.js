@@ -457,7 +457,8 @@ describe('Test select box and lasso per trace:', function() {
         };
     }
 
-    function makeAssertRanges(subplot) {
+    function makeAssertRanges(subplot, tol) {
+        tol = tol || 1;
         var callNumber = 0;
 
         return function(expected) {
@@ -465,13 +466,14 @@ describe('Test select box and lasso per trace:', function() {
             var ranges = (eventData.range || {})[subplot] || [];
 
             expect(ranges)
-                .toBeCloseTo2DArray(expected, 1, msg + 'select box range for ' + subplot);
+                .toBeCloseTo2DArray(expected, tol, msg + 'select box range for ' + subplot);
 
             callNumber++;
         };
     }
 
-    function makeAssertLassoPoints(subplot) {
+    function makeAssertLassoPoints(subplot, tol) {
+        tol = tol || 1;
         var callNumber = 0;
 
         return function(expected) {
@@ -479,7 +481,7 @@ describe('Test select box and lasso per trace:', function() {
             var lassoPoints = (eventData.lassoPoints || {})[subplot] || [];
 
             expect(lassoPoints)
-                .toBeCloseTo2DArray(expected, 1, msg + 'lasso points for ' + subplot);
+                .toBeCloseTo2DArray(expected, tol, msg + 'lasso points for ' + subplot);
 
             callNumber++;
         };
@@ -701,12 +703,12 @@ describe('Test select box and lasso per trace:', function() {
         .then(done);
     }, LONG_TIMEOUT_INTERVAL);
 
-    it('should work on choropleth traces', function(done) {
+    fit('should work on choropleth traces', function(done) {
         gd = createGraphDiv();
 
         var assertPoints = makeAssertPoints(['location', 'z']);
-        var assertRanges = makeAssertRanges('geo');
-        var assertLassoPoints = makeAssertLassoPoints('geo');
+        var assertRanges = makeAssertRanges('geo', -0.5);
+        var assertLassoPoints = makeAssertLassoPoints('geo', -0.5);
 
         var fig = Lib.extendDeep({}, require('@mocks/geo_choropleth-text'));
         fig.layout.width = 870;

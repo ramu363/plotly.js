@@ -1414,11 +1414,14 @@ describe('Test geo base layers', function() {
     });
 });
 
-describe('Test geo zoom/pan/drag interactions:', function() {
-    var TOL = 1;
+fdescribe('Test geo zoom/pan/drag interactions:', function() {
     var gd;
     var eventData;
     var dblClickCnt = 0;
+
+    // tolerance for `.toBeCloseTo`
+    // 0 means 0 exact decimals needed
+    var TOL = 0;
 
     afterEach(destroyGraphDiv);
 
