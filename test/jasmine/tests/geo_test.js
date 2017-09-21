@@ -1419,13 +1419,6 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
     var eventData;
     var dblClickCnt = 0;
 
-    // tolerances for `.toBeCloseTo`
-    // 1 means 1 exact decimals needed
-    var TOL = 1;
-    // set lower tolerance on screen-based measures
-    // which may depend on environment
-    var TOL_SCREEN_BASED = 0.5;
-
     afterEach(destroyGraphDiv);
 
     function plot(fig) {
@@ -1501,11 +1494,11 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var center = geoLayout.center;
             var scale = geoLayout.projection.scale;
 
-            expect(rotation.lon).toBeCloseTo(attr[0][0], TOL, 'rotation.lon');
-            expect(rotation.lat).toBeCloseTo(attr[0][1], TOL, 'rotation.lat');
-            expect(center.lon).toBeCloseTo(attr[1][0], TOL, 'center.lon');
-            expect(center.lat).toBeCloseTo(attr[1][1], TOL, 'center.lat');
-            expect(scale).toBeCloseTo(attr[2], TOL, 'zoom');
+            expect(rotation.lon).toBeCloseTo(attr[0][0], 1, 'rotation.lon');
+            expect(rotation.lat).toBeCloseTo(attr[0][1], 1, 'rotation.lat');
+            expect(center.lon).toBeCloseTo(attr[1][0], 1, 'center.lon');
+            expect(center.lat).toBeCloseTo(attr[1][1], 1, 'center.lat');
+            expect(scale).toBeCloseTo(attr[2], 1, 'zoom');
 
             var geo = geoLayout._subplot;
             var rotate = geo.projection.rotate();
@@ -1513,13 +1506,13 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var _center = geo.projection.center();
             var _scale = geo.projection.scale();
 
-            expect(rotate[0]).toBeCloseTo(proj[0][0], TOL, 'rotate[0]');
-            expect(rotate[1]).toBeCloseTo(proj[0][1], TOL, 'rotate[1]');
-            expect(translate[0]).toBeCloseTo(proj[1][0], TOL, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[1][1], TOL, 'translate[1]');
-            expect(_center[0]).toBeCloseTo(proj[2][0], TOL, 'center[0]');
-            expect(_center[1]).toBeCloseTo(proj[2][1], TOL, 'center[1]');
-            expect(_scale).toBeCloseTo(proj[3], TOL, 'scale');
+            expect(rotate[0]).toBeCloseTo(proj[0][0], 0, 'rotate[0]');
+            expect(rotate[1]).toBeCloseTo(proj[0][1], 0, 'rotate[1]');
+            expect(translate[0]).toBeCloseTo(proj[1][0], 0, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[1][1], 0, 'translate[1]');
+            expect(_center[0]).toBeCloseTo(proj[2][0], 0, 'center[0]');
+            expect(_center[1]).toBeCloseTo(proj[2][1], 0, 'center[1]');
+            expect(_scale).toBeCloseTo(proj[3], 0, 'scale');
 
             assertEventData(eventKeys);
         }
@@ -1599,17 +1592,17 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var rotation = geoLayout.projection.rotation;
             var scale = geoLayout.projection.scale;
 
-            expect(rotation.lon).toBeCloseTo(attr[0][0], TOL, 'rotation.lon');
-            expect(rotation.lat).toBeCloseTo(attr[0][1], TOL, 'rotation.lat');
-            expect(scale).toBeCloseTo(attr[1], TOL, 'zoom');
+            expect(rotation.lon).toBeCloseTo(attr[0][0], 0, 'rotation.lon');
+            expect(rotation.lat).toBeCloseTo(attr[0][1], 0, 'rotation.lat');
+            expect(scale).toBeCloseTo(attr[1], 1, 'zoom');
 
             var geo = geoLayout._subplot;
             var rotate = geo.projection.rotate();
             var _scale = geo.projection.scale();
 
-            expect(rotate[0]).toBeCloseTo(proj[0][0], TOL, 'rotate[0]');
-            expect(rotate[1]).toBeCloseTo(proj[0][1], TOL, 'rotate[1]');
-            expect(_scale).toBeCloseTo(proj[1], TOL, 'scale');
+            expect(rotate[0]).toBeCloseTo(proj[0][0], 0, 'rotate[0]');
+            expect(rotate[1]).toBeCloseTo(proj[0][1], 0, 'rotate[1]');
+            expect(_scale).toBeCloseTo(proj[1], 0, 'scale');
 
             assertEventData(eventKeys);
         }
@@ -1688,20 +1681,20 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var center = geoLayout.center;
             var scale = geoLayout.projection.scale;
 
-            expect(center.lon).toBeCloseTo(attr[0][0], TOL, 'center.lon');
-            expect(center.lat).toBeCloseTo(attr[0][1], TOL, 'center.lat');
-            expect(scale).toBeCloseTo(attr[1], TOL, 'zoom');
+            expect(center.lon).toBeCloseTo(attr[0][0], 1, 'center.lon');
+            expect(center.lat).toBeCloseTo(attr[0][1], 1, 'center.lat');
+            expect(scale).toBeCloseTo(attr[1], 1, 'zoom');
 
             var geo = geoLayout._subplot;
             var translate = geo.projection.translate();
             var _center = geo.projection.center();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], TOL_SCREEN_BASED, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], TOL_SCREEN_BASED, 'translate[1]');
-            expect(_center[0]).toBeCloseTo(proj[1][0], TOL_SCREEN_BASED, 'center[0]');
-            expect(_center[1]).toBeCloseTo(proj[1][1], TOL_SCREEN_BASED, 'center[1]');
-            expect(_scale).toBeCloseTo(proj[2], TOL_SCREEN_BASED, 'scale');
+            expect(translate[0]).toBeCloseTo(proj[0][0], -0.5, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], -0.5, 'translate[1]');
+            expect(_center[0]).toBeCloseTo(proj[1][0], -0.5, 'center[0]');
+            expect(_center[1]).toBeCloseTo(proj[1][1], -0.5, 'center[1]');
+            expect(_scale).toBeCloseTo(proj[2], -0.5, 'scale');
 
             assertEventData(eventKeys);
         }
@@ -1770,18 +1763,18 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var center = geoLayout.center;
             var scale = geoLayout.projection.scale;
 
-            expect(center.lon).toBeCloseTo(attr[0][0], TOL, 'center.lon');
-            expect(center.lat).toBeCloseTo(attr[0][1], TOL, 'center.lat');
-            expect(scale).toBeCloseTo(attr[1], TOL, 'zoom');
+            expect(center.lon).toBeCloseTo(attr[0][0], 1, 'center.lon');
+            expect(center.lat).toBeCloseTo(attr[0][1], 1, 'center.lat');
+            expect(scale).toBeCloseTo(attr[1], 1, 'zoom');
 
             // albersUsa projection does not have a center() method
             var geo = geoLayout._subplot;
             var translate = geo.projection.translate();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], TOL_SCREEN_BASED, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], TOL_SCREEN_BASED, 'translate[1]');
-            expect(_scale).toBeCloseTo(proj[1], TOL_SCREEN_BASED, 'scale');
+            expect(translate[0]).toBeCloseTo(proj[0][0], -0.5, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], -0.5, 'translate[1]');
+            expect(_scale).toBeCloseTo(proj[1], -0.5, 'scale');
 
             assertEventData(eventKeys);
         }
