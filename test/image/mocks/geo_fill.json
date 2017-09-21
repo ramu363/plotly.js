@@ -100,6 +100,9 @@
       "lataxis": { 
         "range": [42, 51]
       },
+      "center": {
+        "lon": -72.5
+      },
       "showland": true
     },
     "showlegend": false,
