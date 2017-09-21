@@ -1419,9 +1419,12 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
     var eventData;
     var dblClickCnt = 0;
 
-    // tolerance for `.toBeCloseTo`
-    // 0 means 0 exact decimals needed
-    var TOL = 0;
+    // tolerances for `.toBeCloseTo`
+    // 1 means 1 exact decimals needed
+    var TOL = 1;
+    // set lower tolerance on screen-based measures
+    // which may depend on environment
+    var TOL_SCREEN_BASED = 0.5;
 
     afterEach(destroyGraphDiv);
 
@@ -1694,11 +1697,11 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var _center = geo.projection.center();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], TOL, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], TOL, 'translate[1]');
-            expect(_center[0]).toBeCloseTo(proj[1][0], TOL, 'center[0]');
-            expect(_center[1]).toBeCloseTo(proj[1][1], TOL, 'center[1]');
-            expect(_scale).toBeCloseTo(proj[2], TOL, 'scale');
+            expect(translate[0]).toBeCloseTo(proj[0][0], TOL_SCREEN_BASED, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], TOL_SCREEN_BASED, 'translate[1]');
+            expect(_center[0]).toBeCloseTo(proj[1][0], TOL_SCREEN_BASED, 'center[0]');
+            expect(_center[1]).toBeCloseTo(proj[1][1], TOL_SCREEN_BASED, 'center[1]');
+            expect(_scale).toBeCloseTo(proj[2], TOL_SCREEN_BASED, 'scale');
 
             assertEventData(eventKeys);
         }
@@ -1776,9 +1779,9 @@ fdescribe('Test geo zoom/pan/drag interactions:', function() {
             var translate = geo.projection.translate();
             var _scale = geo.projection.scale();
 
-            expect(translate[0]).toBeCloseTo(proj[0][0], TOL, 'translate[0]');
-            expect(translate[1]).toBeCloseTo(proj[0][1], TOL, 'translate[1]');
-            expect(_scale).toBeCloseTo(proj[1], TOL, 'scale');
+            expect(translate[0]).toBeCloseTo(proj[0][0], TOL_SCREEN_BASED, 'translate[0]');
+            expect(translate[1]).toBeCloseTo(proj[0][1], TOL_SCREEN_BASED, 'translate[1]');
+            expect(_scale).toBeCloseTo(proj[1], TOL_SCREEN_BASED, 'scale');
 
             assertEventData(eventKeys);
         }
