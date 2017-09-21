@@ -13,6 +13,7 @@
 
 var d3 = require('d3');
 
+var Plotly = require('../../plotly');
 var Lib = require('../../lib');
 var Color = require('../../components/color');
 var Drawing = require('../../components/drawing');
@@ -183,7 +184,9 @@ proto.updateProjection = function(fullLayout, geoLayout) {
         gs.t + gs.h * (1 - domain.y[0])
     ]];
 
-    var rangeBox = makeRangeBox(geoLayout.lonaxis.range, geoLayout.lataxis.range);
+    var lonaxis = geoLayout.lonaxis;
+    var lataxis = geoLayout.lataxis;
+    var rangeBox = makeRangeBox(lonaxis.range, lataxis.range);
 
     // fit projection 'scale' and 'translate' to set lon/lat ranges
     projection.fitExtent(extent, rangeBox);
@@ -341,20 +344,15 @@ proto.updateFx = function(fullLayout, geoLayout) {
     if(_this.isStatic) return;
 
     function zoomReset() {
-        var view = Lib.expandObjectPaths(Lib.extendFlat({}, _this.viewInitial));
-        view.projection.type = geoLayout.projection.type;
-        view.projection.parallels = geoLayout.projection.parallels;
-        view.domain = geoLayout.domain;
-        view.lonaxis = geoLayout.lonaxis;
-        view.lataxis = geoLayout.lataxis;
+        var viewInitial = _this.viewInitial;
+        var updateObj = {};
 
-        _this.updateProjection(fullLayout, view);
-        _this.updateFx(fullLayout, geoLayout);
-        _this.render();
+        for(var k in viewInitial) {
+            updateObj[_this.id + '.' + k] = viewInitial[k];
+        }
 
-        // TODO call sync !!!
-        //
-        //
+        Plotly.relayout(gd, updateObj);
+        gd.emit('plotly_doubleclick', null);
     }
 
     function invert(lonlat) {
