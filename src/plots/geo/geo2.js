@@ -291,8 +291,6 @@ proto.updateBaseLayers = function(fullLayout, geoLayout) {
         if(d === 'frame') {
             path.datum(constants.sphereSVG);
         } else if(isTopoLayer(d)) {
-            // TODO try topojson.mesh !!!
-            // https://github.com/topojson/topojson-client/blob/master/README.md#mesh
             path.datum(topojsonFeature(topojson, topojson.objects[d]));
         } else if(isAxisLayer(d)) {
             path.datum(makeGraticule(d, geoLayout))
