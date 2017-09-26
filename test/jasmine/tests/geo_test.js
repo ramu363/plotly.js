@@ -1195,7 +1195,7 @@ describe('Test geo interactions', function() {
                         clearInterval(interval);
                         resolve();
                     }
-                }, 50);
+                }, 60);
             });
         })
         .catch(fail)
